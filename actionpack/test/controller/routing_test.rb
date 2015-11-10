@@ -575,6 +575,14 @@ class LegacyRouteSetTests < ActiveSupport::TestCase
     end
   end
 
+  def test_with_hash_with_indifferent_access
+    rs.draw do
+      get 'post/:id' => 'post#show', as: 'post'
+    end
+
+    assert_equal '/post/1', url_for(rs, ActiveSupport::HashWithIndifferentAccess.new(controller: 'post', action: 'show', id: 1))
+  end
+
   def test_dynamic_path_allowed
     rs.draw do
       get '*path' => 'content#show_file'
