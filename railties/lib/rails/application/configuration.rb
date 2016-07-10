@@ -98,7 +98,7 @@ module Rails
         @api_only = value
         generators.api_only = value
 
-        @debug_exception_response_format ||= :api
+        @debug_exception_response_format ||= :api if value
       end
 
       def debug_exception_response_format
