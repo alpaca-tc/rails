@@ -852,6 +852,7 @@ module ActionDispatch
         end
 
         req = make_request(env)
+        old_params = req.path_parameters
         @router.recognize(req) do |route, params|
           params.merge!(extras)
           params.each do |key, value|
@@ -860,8 +861,7 @@ module ActionDispatch
               params[key] = URI.parser.unescape(value)
             end
           end
-          old_params = req.path_parameters
-          req.path_parameters = old_params.merge params
+          req.path_parameters = old_params.merge(params)
           app = route.app
           if app.matches?(req) && app.dispatcher?
             begin
@@ -871,6 +871,8 @@ module ActionDispatch
             end
 
             return req.path_parameters
+          else
+            req.path_parameters = old_params
           end
         end
 
