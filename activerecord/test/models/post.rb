@@ -34,6 +34,7 @@ class Post < ActiveRecord::Base
   scope :locked, -> { lock }
 
   belongs_to :author
+  belongs_to :writer, class_name: 'Author'
   belongs_to :readonly_author, -> { readonly }, class_name: "Author", foreign_key: :author_id
 
   belongs_to :author_with_posts, -> { includes(:posts) }, class_name: "Author", foreign_key: :author_id

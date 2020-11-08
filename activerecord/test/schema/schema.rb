@@ -783,6 +783,7 @@ ActiveRecord::Schema.define do
 
   create_table :posts, force: true do |t|
     t.references :author
+    t.references :writer
     t.string :title, null: false
     # use VARCHAR2(4000) instead of CLOB datatype as CLOB data type has many limitations in
     # Oracle SELECT WHERE clause which causes many unit test failures
