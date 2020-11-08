@@ -2,6 +2,7 @@
 
 class Author < ActiveRecord::Base
   has_many :posts
+  has_many :wrote_posts, class_name: 'Post', foreign_key: 'writer_id'
   has_many :serialized_posts
   has_one :post
   has_many :very_special_comments, through: :posts

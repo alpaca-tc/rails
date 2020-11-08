@@ -85,6 +85,15 @@ class AutomaticInverseFindingTests < ActiveRecord::TestCase
     assert_equal post_reflection, author_child_reflection.inverse_of, "The Author reflection's inverse should be the Post reflection"
   end
 
+  def test_has_one_and_belongs_to_with_non_default_foreign_key_should_not_find_inverse_automatically
+    author = Author.create!(name: 'name')
+    post = Post.create!(writer: author, title: 'hello', body: 'world')
+
+    assert_nil author.post
+    assert_nil post.author_id
+    assert_empty author.post_ids
+  end
+
   def test_has_one_and_belongs_to_automatic_inverse_shares_objects
     car = Car.first
     bulb = Bulb.create!(car: car)

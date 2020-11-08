@@ -624,6 +624,7 @@ module ActiveRecord
         def valid_inverse_reflection?(reflection)
           reflection &&
             klass <= reflection.active_record &&
+            foreign_key == reflection.foreign_key &&
             can_find_inverse_of_automatically?(reflection)
         end
 
