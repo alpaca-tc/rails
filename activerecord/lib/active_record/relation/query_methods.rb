@@ -1155,7 +1155,7 @@ module ActiveRecord
     private
       def lookup_table_klass_from_join_dependencies(table_name)
         each_join_dependencies do |join|
-          return join.base_klass if table_name == join.table_name
+          return join.base_klass if table_name == join.table_name || (join.is_a?(ActiveRecord::Associations::JoinDependency::JoinAssociation) && table_name == join.reflection.name.to_s)
         end
         nil
       end

@@ -209,6 +209,15 @@ class EagerAssociationTest < ActiveRecord::TestCase
     assert_equal [child], comment.children
   end
 
+  def test_enum_in_where_references_association_name
+    parent = comments(:greetings)
+    parent.children.create!(label: "child", body: "hi", post_id: parent.post_id)
+
+    posts = Post.joins(comments: :children).where(children: { label: "child" })
+
+    assert_equal [parent.post], posts
+  end
+
   def test_attribute_alias_in_where_references_association_name
     firm = Firm.includes(:clients).where("clients.new_name": "Summit").last
     assert_equal companies(:first_firm), firm
