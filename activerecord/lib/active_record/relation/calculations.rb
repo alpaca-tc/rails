@@ -387,10 +387,12 @@ module ActiveRecord
         end
         group_fields = arel_columns(group_fields)
 
-        group_aliases = group_fields.map { |field|
+        group_aliases = group_fields.map.with_index { |field, unique_prefix|
           field = connection.visitor.compile(field) if Arel.arel_node?(field)
-          column_alias_for(field.to_s.downcase)
+          # alias name may not be unique when truncated to the length of table_alias_length. Make alias name unique by putting unique value in prefix.
+          column_alias_for("#{unique_prefix}_#{field.to_s.downcase}") #
         }
+
         group_columns = group_aliases.zip(group_fields)
 
         column = aggregate_column(column_name)
@@ -464,6 +466,7 @@ module ActiveRecord
         column_alias.strip!
         column_alias.gsub!(/ +/, "_")
 
+        binding.pry
         connection.table_alias_for(column_alias)
       end
 
