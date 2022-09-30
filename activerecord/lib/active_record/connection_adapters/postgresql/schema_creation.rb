@@ -12,6 +12,33 @@ module ActiveRecord
             sql << o.exclusion_constraint_drops.map { |con| visit_DropExclusionConstraint con }.join(" ")
           end
 
+          def visit_CreateIndexDefinition(o)
+            index = o.index
+
+            if index.unique && index.deferrable
+              sql = ["ALTER TABLE"]
+              sql << quote_table_name(index.table)
+              sql << "ADD CONSTRAINT"
+              sql << quote_column_name(index.name)
+              sql << "UNIQUE"
+              sql << o.algorithm if o.algorithm
+              sql << "IF NOT EXISTS" if o.if_not_exists
+              sql << index.type if index.type
+              sql << "USING #{index.using}" if supports_index_using? && index.using
+              sql << "(#{quoted_columns(index)})"
+              sql << "WHERE #{index.where}" if supports_partial_index? && index.where
+
+              if o.index.deferrable
+                sql << "DEFERRABLE"
+                sql << "INITIALLY #{o.index.deferrable.to_s.upcase}" unless o.index.deferrable == true
+              end
+
+              sql.join(" ")
+            else
+              super
+            end
+          end
+
           def visit_AddForeignKey(o)
             super.dup.tap do |sql|
               if o.deferrable

@@ -233,6 +233,7 @@ module ActiveRecord
         index_parts << "using: #{index.using.inspect}" if !@connection.default_index_type?(index)
         index_parts << "type: #{index.type.inspect}" if index.type
         index_parts << "comment: #{index.comment.inspect}" if index.comment
+        index_parts << "deferrable: #{index.deferrable.inspect}" if index.deferrable
         index_parts
       end
 

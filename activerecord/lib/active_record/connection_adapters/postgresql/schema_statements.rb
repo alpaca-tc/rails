@@ -88,10 +88,12 @@ module ActiveRecord
 
           result = query(<<~SQL, "SCHEMA")
             SELECT distinct i.relname, d.indisunique, d.indkey, pg_get_indexdef(d.indexrelid), t.oid,
-                            pg_catalog.obj_description(i.oid, 'pg_class') AS comment, d.indisvalid
+                            pg_catalog.obj_description(i.oid, 'pg_class') AS comment, d.indisvalid,
+                            c.condeferrable AS deferrable, c.condeferred AS deferred
             FROM pg_class t
             INNER JOIN pg_index d ON t.oid = d.indrelid
             INNER JOIN pg_class i ON d.indexrelid = i.oid
+            LEFT JOIN pg_constraint c ON c.conindid = i.oid
             LEFT JOIN pg_namespace n ON n.oid = t.relnamespace
             WHERE i.relkind IN ('i', 'I')
               AND d.indisprimary = 'f'
@@ -108,6 +110,7 @@ module ActiveRecord
             oid = row[4]
             comment = row[5]
             valid = row[6]
+            deferrable = extract_constraint_deferrable(!!row[7], row[8])
 
             using, expressions, where = inddef.scan(/ USING (\w+?) \((.+?)\)(?: WHERE (.+))?\z/m).flatten
 
@@ -146,7 +149,8 @@ module ActiveRecord
               where: where,
               using: using.to_sym,
               comment: comment.presence,
-              valid: valid
+              valid: valid,
+              deferrable: deferrable
             )
           end
         end
@@ -539,7 +543,7 @@ module ActiveRecord
 
             options[:on_delete] = extract_foreign_key_action(row["on_delete"])
             options[:on_update] = extract_foreign_key_action(row["on_update"])
-            options[:deferrable] = extract_foreign_key_deferrable(row["deferrable"], row["deferred"])
+            options[:deferrable] = extract_constraint_deferrable(row["deferrable"], row["deferred"])
 
             options[:validate] = row["valid"]
 
@@ -836,7 +840,7 @@ module ActiveRecord
             end
           end
 
-          def extract_foreign_key_deferrable(deferrable, deferred)
+          def extract_constraint_deferrable(deferrable, deferred)
             deferrable && (deferred ? :deferred : true)
           end
 

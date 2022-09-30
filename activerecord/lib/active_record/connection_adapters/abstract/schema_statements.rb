@@ -1384,7 +1384,7 @@ module ActiveRecord
       end
 
       def add_index_options(table_name, column_name, name: nil, if_not_exists: false, internal: false, **options) # :nodoc:
-        options.assert_valid_keys(:unique, :length, :order, :opclass, :where, :type, :using, :comment, :algorithm)
+        options.assert_valid_keys(:unique, :length, :order, :opclass, :where, :type, :using, :comment, :algorithm, :deferrable)
 
         column_names = index_column_names(column_name)
 
@@ -1403,10 +1403,18 @@ module ActiveRecord
           where: options[:where],
           type: options[:type],
           using: options[:using],
-          comment: options[:comment]
+          comment: options[:comment],
+          deferrable: index_deferrable(options[:unique], options[:deferrable])
         )
 
         [index, index_algorithm(options[:algorithm]), if_not_exists]
+      end
+
+      def index_deferrable(unique, deferrable)
+        return false unless deferrable
+        return deferrable if unique
+
+        raise ArgumentError, "You can't set :deferrable unless you pass unique: true"
       end
 
       def index_algorithm(algorithm) # :nodoc:

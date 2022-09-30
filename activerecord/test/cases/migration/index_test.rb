@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
 require "cases/helper"
+require "support/schema_dumping_helper"
 
 module ActiveRecord
   class Migration
     class IndexTest < ActiveRecord::TestCase
+      include SchemaDumpingHelper
+
       attr_reader :connection, :table_name
 
       def setup
@@ -255,6 +258,89 @@ module ActiveRecord
 
           connection.remove_index("testings", "last_name")
           assert_not connection.index_exists?("testings", "last_name")
+        end
+      end
+
+      if ActiveRecord::Base.connection.supports_deferrable_constraints?
+        def test_deferrable_without_unique
+          [true, :immediate, :deferrable].each do |deferrable|
+            e = assert_raises(ArgumentError) {
+              @connection.add_index :testings, ["last_name"], deferrable: deferrable
+            }
+            assert_match(/You can't set :deferrable unless you pass unique: true/, e.message)
+          end
+        end
+
+        def test_deferrable_index
+          @connection.add_index :testings, ["last_name"], unique: true, deferrable: true
+
+          indexs = @connection.indexes("testings")
+          assert_equal 1, indexs.size
+
+          index = indexs.first
+          assert_equal true, index.deferrable
+        end
+
+        def test_not_deferrable_index
+          @connection.add_index :testings, ["last_name"], unique: true, deferrable: false
+
+          indexs = @connection.indexes("testings")
+          assert_equal 1, indexs.size
+
+          index = indexs.first
+          assert_equal false, index.deferrable
+        end
+
+        def test_deferrable_initially_deferred_index
+          @connection.add_index :testings, ["last_name"], unique: true, deferrable: :deferred
+
+          indexes = @connection.indexes("testings")
+          assert_equal 1, indexes.size
+
+          index = indexes.first
+          assert_equal :deferred, index.deferrable
+        end
+
+        def test_deferrable_initially_immediate_index
+          @connection.add_index :testings, ["last_name"], unique: true, deferrable: :immediate
+
+          indexes = @connection.indexes("testings")
+          assert_equal 1, indexes.size
+
+          index = indexes.first
+          assert_equal true, index.deferrable
+        end
+
+        def test_schema_dumping_with_defferable
+          @connection.add_index :testings, ["last_name"], unique: true, deferrable: true
+
+          output = dump_table_schema "testings"
+
+          assert_match %r{\s+t\.index \["last_name"\], name: "index_testings_on_last_name", unique: true, deferrable: true$}, output
+        end
+
+        def test_schema_dumping_with_disabled_defferable
+          @connection.add_index :testings, ["last_name"], unique: true, deferrable: false
+
+          output = dump_table_schema "testings"
+
+          assert_match %r{\s+t\.index \["last_name"\], name: "index_testings_on_last_name", unique: true$}, output
+        end
+
+        def test_schema_dumping_with_defferable_initially_deferred
+          @connection.add_index :testings, ["last_name"], unique: true, deferrable: :deferred
+
+          output = dump_table_schema "testings"
+
+          assert_match %r{\s+t\.index \["last_name"\], name: "index_testings_on_last_name", unique: true, deferrable: :deferred$}, output
+        end
+
+        def test_schema_dumping_with_defferable_initially_immediate
+          @connection.add_index :testings, ["last_name"], unique: true, deferrable: :immediate
+
+          output = dump_table_schema "testings"
+
+          assert_match %r{\s+t\.index \["last_name"\], name: "index_testings_on_last_name", unique: true, deferrable: true$}, output
         end
       end
 
