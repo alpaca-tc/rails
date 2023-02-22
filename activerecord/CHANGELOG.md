@@ -9,7 +9,7 @@
 
     By default, unique constraints in PostgreSQL are checked after each statement.
     This works for most use cases, but becomes a major limitation when replacing
-    records with unique column  by using multiple statements.
+    records with unique column by using multiple statements.
 
     An example of swapping unique columns between records.
 
@@ -34,7 +34,7 @@
     add_unique_key :items, [:position], deferrable: :immediate
     ```
 
-    Passing `deferrable: immediate` does not change the behaviour of the previous example,
+    Passing `deferrable: :immediate` does not change the behaviour of the previous example,
     but allows manually deferring the check using `SET CONSTRAINTS ALL DEFERRED` within a transaction.
     This will cause the unique constraints to be checked after the transaction.
 
