@@ -56,7 +56,7 @@ module ActiveRecord
                   "t.unique_key #{unique_key.columns.inspect}"
                 ]
 
-                parts << "deferrable: #{unique_key.deferrable.inspect}" unless unique_key.deferrable == false
+                parts << "deferrable: #{unique_key.deferrable.inspect}" if unique_key.deferrable
 
                 if unique_key.export_name_on_schema_dump?
                   parts << "name: #{unique_key.name.inspect}"
