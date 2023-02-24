@@ -283,6 +283,7 @@ module Rails
             active_record.before_committed_on_all_records = true
             active_record.default_column_serializer = nil
             active_record.encryption.hash_digest_class = OpenSSL::Digest::SHA256
+            active_record.raise_on_foreign_key_deferrable_true = false
           end
 
           if respond_to?(:action_dispatch)

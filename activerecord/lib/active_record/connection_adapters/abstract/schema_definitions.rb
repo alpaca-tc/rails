@@ -140,7 +140,15 @@ module ActiveRecord
       end
 
       def deferrable
-        options[:deferrable]
+        if options[:deferrable] == :immediate && !ActiveRecord.raise_on_foreign_key_deferrable_true
+          ActiveRecord.deprecator.warn(<<~MSG.squish)
+            deferrableはtrueではなく:immediateを返すよ
+          MSG
+
+          true
+        else
+          options[:deferrable]
+        end
       end
 
       def custom_primary_key?

@@ -312,6 +312,9 @@ module ActiveRecord
   singleton_class.attr_accessor :before_committed_on_all_records
   self.before_committed_on_all_records = false
 
+  singleton_class.attr_accessor :raise_on_foreign_key_deferrable_true
+  self.raise_on_foreign_key_deferrable_true = true
+
   ##
   # :singleton-method:
   # Specify a threshold for the size of query result sets. If the number of

@@ -152,3 +152,6 @@
 # recommended to explicitly define the serialization method for each column
 # rather than to rely on a global default.
 # Rails.application.config.active_record.default_column_serializer = nil
+#
+# TODO: Change variable name, add documentation
+# Rails.application.config.active_record.raise_on_foreign_key_deferrable_true = false

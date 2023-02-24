@@ -18,11 +18,8 @@ module ActiveRecord
 
           def visit_AddForeignKey(o)
             super.dup.tap do |sql|
-              if o.deferrable
-                sql << " DEFERRABLE"
-                sql << " INITIALLY #{o.deferrable.to_s.upcase}" unless o.deferrable == true
-              end
-
+              # TODO: Replace `o.options[:deferrable]` with `o.deferrable` when ActiveRecord.raise_on_foreign_key_deferrable_true is removed
+              sql << " DEFERRABLE INITIALLY #{o.options[:deferrable].to_s.upcase}" if o.options[:deferrable]
               sql << " NOT VALID" unless o.validate?
             end
           end

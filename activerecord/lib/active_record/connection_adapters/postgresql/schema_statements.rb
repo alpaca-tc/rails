@@ -543,7 +543,7 @@ module ActiveRecord
 
             options[:on_delete] = extract_foreign_key_action(row["on_delete"])
             options[:on_update] = extract_foreign_key_action(row["on_update"])
-            options[:deferrable] = extract_foreign_key_deferrable(row["deferrable"], row["deferred"])
+            options[:deferrable] = extract_constraint_deferrable(row["deferrable"], row["deferred"])
 
             options[:validate] = row["valid"]
             to_table = Utils.unquote_identifier(row["to_table"])
@@ -630,7 +630,7 @@ module ActiveRecord
           SQL
 
           unique_info.map do |row|
-            deferrable = extract_unique_key_deferrable(row["condeferrable"], row["condeferred"])
+            deferrable = extract_constraint_deferrable(row["condeferrable"], row["condeferred"])
 
             columns = query_values(<<~SQL, "SCHEMA")
               SELECT a.attname
@@ -935,18 +935,8 @@ module ActiveRecord
             end
           end
 
-          def extract_foreign_key_deferrable(deferrable, deferred)
-            deferrable && (deferred ? :deferred : true)
-          end
-
-          def extract_unique_key_deferrable(deferrable, deferred)
+          def extract_constraint_deferrable(deferrable, deferred)
             deferrable && (deferred ? :deferred : :immediate)
-          end
-
-          def assert_valid_deferrable(deferrable) # :nodoc:
-            return if !deferrable || %i(immediate deferred).include?(deferrable)
-
-            raise ArgumentError, "deferrable must be `:immediate` or `:deferred`, got: `#{deferrable.inspect}`"
           end
 
           def reference_name_for_table(table_name)

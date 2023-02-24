@@ -1131,6 +1131,8 @@ module ActiveRecord
         return if options[:if_not_exists] == true && foreign_key_exists?(from_table, to_table, **options.slice(:column))
 
         options = foreign_key_options(from_table, to_table, options)
+        assert_valid_deferrable(options[:deferrable])
+
         at = create_alter_table from_table
         at.add_foreign_key to_table, options
 
@@ -1703,6 +1705,12 @@ module ActiveRecord
         def check_constraint_for!(table_name, expression: nil, **options)
           check_constraint_for(table_name, expression: expression, **options) ||
             raise(ArgumentError, "Table '#{table_name}' has no check constraint for #{expression || options}")
+        end
+
+        def assert_valid_deferrable(deferrable)
+          return if !deferrable || %i(immediate deferred).include?(deferrable)
+
+          raise ArgumentError, "deferrable must be `:immediate` or `:deferred`, got: `#{deferrable.inspect}`"
         end
 
         def validate_index_length!(table_name, new_name, internal = false)
