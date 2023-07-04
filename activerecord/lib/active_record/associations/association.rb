@@ -372,8 +372,7 @@ module ActiveRecord
         end
 
         def inversable?(record)
-          record &&
-            ((!record.persisted? || !owner.persisted?) || matches_foreign_key?(record))
+          record && matches_foreign_key?(record)
         end
 
         def matches_foreign_key?(record)
