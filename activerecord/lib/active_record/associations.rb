@@ -71,6 +71,14 @@ module ActiveRecord
     end
   end
 
+  class InverseOfAssociationMismatchError < ActiveRecordError # :nodoc:
+    attr_reader :reflection
+    def initialize(reflection)
+      @reflection = reflection
+      super("Inverse association #{reflection.name} (#{reflection.options[:inverse_of].inspect} in #{reflection.class_name}) is mismatch class. Expected #{reflection.active_record.name} but found #{reflection.inverse_of.klass.name}.")
+    end
+  end
+
   class HasManyThroughAssociationNotFoundError < ActiveRecordError # :nodoc:
     attr_reader :owner_class, :reflection
 

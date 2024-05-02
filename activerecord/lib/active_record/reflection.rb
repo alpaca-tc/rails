@@ -238,6 +238,9 @@ module ActiveRecord
           if has_inverse? && inverse_of == self
             raise InverseOfAssociationRecursiveError.new(self)
           end
+          if has_inverse? && !inverse_of.polymorphic? && !(active_record == inverse_of.klass || active_record <= inverse_of.klass || inverse_of.klass <= active_record)
+            raise InverseOfAssociationMismatchError.new(self)
+          end
         end
       end
 
