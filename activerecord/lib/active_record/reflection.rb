@@ -269,6 +269,9 @@ module ActiveRecord
           if inverse_of == self
             raise InverseOfAssociationRecursiveError.new(self)
           end
+          if !inverse_of.polymorphic? && active_record.table_name != inverse_of.klass.table_name
+            raise InverseOfAssociationTableNameMismatchError.new(self)
+          end
         end
       end
 

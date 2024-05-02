@@ -1,3 +1,27 @@
+*   Raise `ActiveRecord::InverseOfAssociationTableNameMismatchError` if invalid inverse_of is specified
+
+    If you accidentally have an irrelevant association with inverse_of, it has been implicitly ignored until now.
+    This change causes an exception to be raised if the wrong association is specified.
+
+    In consideration of STI, the wrong relation is checked by comparing table names instead of comparing class.
+
+    Before:
+    ```ruby
+    # NOTE: Valid value is `inverse_of: :post`.
+    Post.belongs_to(:user, inverse_of: :comment)
+    user = User.create!
+    Post.new(user: user) #=> No error
+    ```
+
+    After:
+    ```ruby
+    Post.belongs_to(:user, inverse_of: :comment)
+    user = User.create!
+    Post.new(user: user) #=> ActiveRecord::InverseOfAssociationTableNameMismatchError: Inverse association user (:comment in User) is mismatch table_name. Expected table_name: 'posts', got 'comments'.
+    ```
+
+    *Hiroyuki Ishii*
+
 *   Fix `index_errors` having incorrect index in association validation errors.
 
     *lulalala*

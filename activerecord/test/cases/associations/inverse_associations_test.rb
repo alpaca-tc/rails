@@ -873,6 +873,25 @@ class InverseBelongsToTests < ActiveRecord::TestCase
     end
   end
 
+  def test_should_raise_error_when_using_inverses_with_mismatched_table_names
+    face_klass = Class.new(ActiveRecord::Base) do
+      self.table_name = Face.table_name
+
+      def self.name
+        "Face"
+      end
+    end
+
+    # Correct inverse_of is `:face`, but reproduces incorrect configuration `:interests`
+    face_klass.belongs_to(:human, inverse_of: :interests)
+
+    error = assert_raises(ActiveRecord::InverseOfAssociationTableNameMismatchError) do
+      face_klass.preload(:human).load
+    end
+
+    assert_equal("Inverse association human (:interests in Human) is mismatch table_name. Expected table_name: 'faces', got 'interests'.", error.message)
+  end
+
   def test_unscope_does_not_set_inverse_when_incorrect
     interest = interests(:trainspotting)
     human = interest.human
