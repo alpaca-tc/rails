@@ -44,7 +44,11 @@ module ActionDispatch
         def take_failed_screenshot
           return unless failed? && supports_screenshot? && Capybara::Session.instance_created?
 
-          take_screenshot
+          Capybara.available_session_names.each do |session_name|
+            Capybara.using_session(session_name) do
+              take_screenshot
+            end
+          end
           metadata[:failure_screenshot_path] = relative_image_path if Minitest::Runnable.method_defined?(:metadata)
         end
 
@@ -87,7 +91,7 @@ module ActionDispatch
           end
 
           def absolute_image_path
-            "#{absolute_path}.png"
+            "#{absolute_path}#{session_name_suffix}.png"
           end
 
           def relative_image_path
@@ -95,7 +99,11 @@ module ActionDispatch
           end
 
           def absolute_html_path
-            "#{absolute_path}.html"
+            "#{absolute_path}#{session_name_suffix}.html"
+          end
+
+          def session_name_suffix
+            "_#{Capybara.session_name}" unless Capybara.session_name == :default
           end
 
           def save_html
